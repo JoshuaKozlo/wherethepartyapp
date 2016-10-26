@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
-import { Text, View } from 'react-native';
+import { Provider } from 'react-redux';
+import { createStore, applyMiddleware } from 'redux';
+import ReduxThunk from 'redux-thunk';
 import firebase from 'firebase';
-import { Header } from './components/common';
+import reducers from './reducers';
+import Router from './Router';
 
 class App extends Component {
-
 	componentWillMount() {
 		firebase.initializeApp({
 			apiKey: 'AIzaSyCYBRMrsJ8PymrJNFqCcFljlmYGLT8zwSE',
@@ -13,11 +15,17 @@ class App extends Component {
 			storageBucket: 'where-the-party-app.appspot.com',
 			messagingSenderId: '638126812285'
 		});
+		// MUST REMOVE THIS LINE BEFORE DEPLOY
+		firebase.auth().signInWithEmailAndPassword('test@test.com', 'password');
 	}
 
 	render() {
+		const store = createStore(reducers, {}, applyMiddleware(ReduxThunk));
+
 		return (
-			<Header headerText="Where The Party" />
+			<Provider store={store}>
+				<Router />
+			</Provider>
 		);
 	}
 }

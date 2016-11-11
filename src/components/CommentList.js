@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { Text, ListView, View } from 'react-native';
+import { Text, ListView } from 'react-native';
 import { commentsFetch } from '../actions';
 import Comment from './Comment';
 
@@ -51,19 +51,16 @@ const style = {
 		color: '#A9A9A9',
 		textAlign: 'center',
 		paddingTop: 20,
-		fontSize: 12
+		fontSize: 12,
+		flex: 1
 	}
 };
 
-const mapStateToProps = (state, ownProps) => {
-	if (state.comments) {
-		return { comments: state.comments };
+const mapStateToProps = ({ commentList }) => {
+	if (commentList) {
+		return { comments: commentList };
 	}
 	return { comments: false };
-	// if (state.comments[ownProps.place]) {
-	// 	return { comments: state.comments[ownProps.place] };
-	// } 
-	// return { comments: false };
 };
 
 export default connect(mapStateToProps, { commentsFetch })(CommentList);

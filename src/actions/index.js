@@ -1,14 +1,28 @@
 import firebase from 'firebase';
 import GeoFire from 'geofire';
+import _ from 'lodash';
 import {
 	PLACES_FETCH_SUCCESS,
 	USER_ACCEPT_ERROR,
-	USER_CHECKIN_SUCCESS,
-	USER_CHECKOUT_SUCCESS,
 	USER_NOT_IN_RANGE,
 	COMMENTS_FETCH_SUCCESS,
-	SELECT_PLACE
+	SELECT_PLACE,
+	FETCH_USER_DATA
 } from './types';
+
+export const fetchUserData = () => {
+	const { uid } = firebase.auth().currentUser;
+	const userRef = firebase.database().ref(`/users/${uid}`);
+
+	return (dispatch) => {
+		userRef.on('value', (snapshot) => {
+			dispatch({
+				type: FETCH_USER_DATA,
+				payload: snapshot.val()
+			});
+		});
+	};
+};
 
 export const placesFetch = (latitude, longitude) => {
 	const locationRef = firebase.database().ref('/geoplaces');
@@ -32,48 +46,35 @@ export const placesFetch = (latitude, longitude) => {
 	};
 };
 
-export const userCheckIn = (checkIn, checkOut, out = false) => {
-	const { currentUser } = firebase.auth();
-	const database = firebase.database();
-	const locationRef = database.ref('/geoplaces');
-	const checkInRef = database.ref(`/places/${checkIn}/count`);
-	const checkOutRef = database.ref(`/places/${checkOut}/count`);
-	const userRef = database.ref(`/users/${currentUser.uid}`);
-	const geoFire = new GeoFire(locationRef);
+export const userCheckIn = (placeId = null) => {
+	const { uid } = firebase.auth().currentUser;
+	const userRef = firebase.database().ref(`/users/${uid}`);
 
-	return (dispatch) => {
-		if (out) {
-			checkOutRef.transaction(count => count - 1);
-			userRef.child('place').remove().then(() => {
-				dispatch({
-					type: USER_CHECKOUT_SUCCESS
-				});
-			});
-		} else {
-			navigator.geolocation.getCurrentPosition(({ coords }) => {
-				geoFire.get(checkIn).then((location) => {
-					if (checkDistance(coords, location)) {
-						checkInRef.transaction(count => count + 1);
-						if (checkOut) { 
-							checkOutRef.transaction(count => count - 1); 
-						}
-								
-						userRef.update({ place: checkIn }).then(() => {
-							dispatch({
-								type: USER_CHECKIN_SUCCESS,
-								payload: checkIn
-							});
-						});
-					} else {
-						dispatch({
-							type: USER_NOT_IN_RANGE
-						});
-					}
-				});
-			});
-		}
+	return () => {
+		userRef.update({ place: placeId });
 	};
 };
+
+function toggleCount(placeId, uid) {
+	const placeRef = firebase.database().ref(`/places/${placeId}`);
+	const checkInsRef = firebase.database().ref(`/checkIns/${placeId}`);
+
+	placeRef.transaction((place) => {
+		if (place) {
+			if (place.count && place.checkIns) {
+				place.count--;
+				place.checkIns[uid] = null;
+			} else {
+				place.count++;
+				if (!place.checkIns) {
+					place.checkIns = {};
+				}
+				place.checkIns[uid] = true;
+			}
+		}
+		return place;
+	});
+}
 
 export const acceptError = () => {
 	return {
@@ -90,6 +91,14 @@ export const commentsFetch = (place) => {
 				payload: { key: data.key, data: data.val() }
 			});
 		});
+	};
+};
+
+export const commentSubmit = (placeId, user, message) => {
+	const commentsRef = firebase.database().ref('/comments').child(placeId);
+	const name = `${user.first} ${user.last}`;
+	return (dispatch) => {
+		commentsRef.push({ message, name });
 	};
 };
 

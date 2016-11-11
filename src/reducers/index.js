@@ -1,10 +1,10 @@
 import { combineReducers } from 'redux';
-import UserPlaceReducer from './UserPlaceReducer';
+import UserReducer from './UserReducer';
 import PlacesReducer from './PlacesReducer';
-import CommentsReducer from './CommentsReducer';
+import CommentListReducer from './CommentListReducer';
 
 export default combineReducers({
-	userPlace: UserPlaceReducer,
+	user: UserReducer,
 	places: PlacesReducer,
-	comments: CommentsReducer
+	commentList: CommentListReducer,
 });

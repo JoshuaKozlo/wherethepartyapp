@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { ListView, View, Text } from 'react-native';
 import { Actions } from 'react-native-router-flux';
-import { placesFetch, userCheckIn, acceptError, selectPlace } from '../actions';
+import { placesFetch, userCheckIn, acceptError, selectPlace, fetchUserData } from '../actions';
 import PlaceItem from './PlaceItem';
 import ErrorModal from './ErrorModal';
 
@@ -17,12 +17,13 @@ class PlaceList extends Component {
 			this.props.placesFetch(latitude, longitude);
 		});
 		this.createDataSource(this.props);
+		this.props.fetchUserData();
 	}
 
 	componentWillReceiveProps(nextProps) {
 		this.createDataSource(nextProps);
 
-		if (nextProps.userPlace.error) {
+		if (nextProps.user.error) {
 			this.setState({ showModal: true });
 
 		}
@@ -45,7 +46,7 @@ class PlaceList extends Component {
 		return (
 			<PlaceItem 
 				onCheckIn={this.props.userCheckIn}
-				userPlace={this.props.userPlace}
+				user={this.props.user}
 				selectPlace={this.props.selectPlace}
 				data={place}
 			/>
@@ -65,16 +66,16 @@ class PlaceList extends Component {
 					visible={this.state.showModal}
 					onClose={this.closeModal.bind(this)}
 				>
-					{this.props.userPlace.error}
+					{this.props.user.error}
 				</ErrorModal>
 			</View>
 		);
 	}
 }
 
-const mapStateToProps = ({ places, userPlace }) => {
-	return { places, userPlace };
+const mapStateToProps = ({ places, user }) => {
+	return { places, user };
 };
 
 export default connect(mapStateToProps, {
-	placesFetch, userCheckIn, acceptError, selectPlace })(PlaceList);
+	placesFetch, userCheckIn, acceptError, selectPlace, fetchUserData })(PlaceList);

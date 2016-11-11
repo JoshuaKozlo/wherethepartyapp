@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { 
 	Animated,
+	InteractionManager,
 	PanResponder, 
 	Text,
 	LayoutAnimation,
@@ -15,7 +16,11 @@ class PlaceItem extends Component {
 	}
 
 	componentWillMount() {
-		const { onCheckIn, data } = this.props;
+		const { onCheckIn, data, user } = this.props;
+
+		if (user.place === data.id) {
+			this.state.pan.setValue(0);
+		}
 
 		this.panResponder = PanResponder.create({
 			onStartShouldSetPanResponder: () => true,
@@ -23,7 +28,7 @@ class PlaceItem extends Component {
 			onPanResponderTerminationRequest: () => false,
 			
 			onPanResponderMove: (evt, gestureState) => {
-				if (data.id !== this.props.userPlace.place) {
+				if (data.id !== this.props.user.place) {
 					this.state.pan.setValue(400 - gestureState.dx);
 				} else if (gestureState.dx > 0) {
 					this.state.color.setValue(gestureState.dx);
@@ -32,17 +37,17 @@ class PlaceItem extends Component {
 
 			onPanResponderRelease: (e, gestureState) => {
 				if (gestureState.dx === 0) {
-					Actions.placeDetail({ place: this.props.data });
-				} else if (data.id !== this.props.userPlace.place) {			
+					this.onClick();
+				} else if (data.id !== this.props.user.place) {			
 					if (gestureState.dx > 200) {
 						this.state.pan.setValue(0);
-						onCheckIn(data.id, this.props.userPlace.place);
+						onCheckIn(data.id);
 					} else {
 						this.state.pan.setValue(400);
 					}
-				} else if (data.id === this.props.userPlace.place) {
+				} else if (data.id === this.props.user.place) {
 					if (gestureState.dx > 200) {
-						onCheckIn('null', data.id, true);
+						onCheckIn();
 					} else {
 						this.state.color.setValue(0);
 					}
@@ -53,16 +58,7 @@ class PlaceItem extends Component {
 	}
 
 	componentWillReceiveProps(nextProps) {
-		const { data, userPlace } = this.props;
-
-		if (nextProps.userPlace.place !== userPlace.place) {
-			this.state.color.setValue(0);
-			if (nextProps.userPlace.place === data.id) {
-				this.state.pan.setValue(0);
-			} else {
-				this.state.pan.setValue(400);
-			}
-		} else if (nextProps.userPlace.place !== data.id && nextProps.userPlace.error) {
+		if (nextProps.user.place !== this.props.data.id) {
 			this.state.pan.setValue(400);
 		}
 	}
@@ -71,9 +67,16 @@ class PlaceItem extends Component {
 		LayoutAnimation.spring();
 	}
 
+	onClick() {
+		InteractionManager.runAfterInteractions(() => {
+			Actions.placeDetail({ placeId: this.props.data.id });
+		});
+	}
+
 	renderCount(count, style) {
+		const fontSize = count < 100 ? 50 : 40;
 		if (count > 9) {
-			return <Text style={style}>{count}</Text>;
+			return <Text style={[style, { fontSize }]}>{count}</Text>;
 		} 
 	}
 
@@ -101,14 +104,12 @@ class PlaceItem extends Component {
 
 const style = {
 	countStyle: {
-		fontSize: 50,
 		marginRight: 10,
 		marginLeft: 10,
 		color: '#ddd'
 	},
 	nameStyle: {
 		fontSize: 18,
-		marginTop: 8,
 		color: '#3d3d3d'
 	},
 	statusStyle: {
@@ -129,6 +130,7 @@ const style = {
 	containerStyle: {
 		padding: 5,
 		justifyContent: 'flex-start',
+		alignItems: 'center',
 		flexDirection: 'row',
 		height: 75,
 		borderColor: '#DDD',

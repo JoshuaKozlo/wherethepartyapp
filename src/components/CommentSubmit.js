@@ -31,11 +31,11 @@ class CommentSubmit extends Component {
 	}
 
 	onSubmit() {
-		const { placeId, user } = this.props;
+		const { placeId, admin } = this.props;
 		const message = this.state.text.replace(/\r?\n|\r/g, ' ');
 		if (this.state.text.length > 2) {
-			this.props.commentSubmit(placeId, user, message);
-			this.setState({ text: '' });
+			this.props.commentSubmit(placeId, message, admin);
+			this.setState({ text: '', height: 25 });
 		}
 	}
 

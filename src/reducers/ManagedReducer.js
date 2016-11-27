@@ -1,5 +1,5 @@
 import {
-	COMMENTS_FETCH_SUCCESS,
+	MANAGED_FETCH_SUCCESS,
 	SIGN_OUT
 } from '../actions/types';
 
@@ -7,8 +7,8 @@ const INITIAL_STATE = {};
 
 export default (state = INITIAL_STATE, action) => {
 	switch (action.type) {
-		case COMMENTS_FETCH_SUCCESS:
-			return action.payload.data;
+		case MANAGED_FETCH_SUCCESS:
+			return { ...state, ...action.payload };
 		case SIGN_OUT:
 			return INITIAL_STATE;
 		default:

@@ -1,8 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { ListView, View, Text } from 'react-native';
+import { ListView, View } from 'react-native';
 import { Actions } from 'react-native-router-flux';
-import { placesFetch, userCheckIn, acceptError, selectPlace, fetchUserData } from '../actions';
+import { placesFetch, cancelHandles, userCheckIn, acceptError } from '../actions';
 import PlaceItem from './PlaceItem';
 import ErrorModal from './ErrorModal';
 
@@ -12,12 +12,14 @@ class PlaceList extends Component {
 	}
 
 	componentWillMount() {
+		this.createDataSource(this.props);
+	}
+
+	componentDidMount() {
 		navigator.geolocation.getCurrentPosition(({ coords }) => {
 			const { latitude, longitude } = coords;
 			this.props.placesFetch(latitude, longitude);
-		});
-		this.createDataSource(this.props);
-		this.props.fetchUserData();
+		}, error => console.log(error), { enableHighAccuracy: false });
 	}
 
 	componentWillReceiveProps(nextProps) {
@@ -25,8 +27,12 @@ class PlaceList extends Component {
 
 		if (nextProps.user.error) {
 			this.setState({ showModal: true });
-
 		}
+	}
+
+	componentWillUnmount() {
+		console.log('unmount');
+		this.props.cancelHandles();
 	}
 
 	createDataSource({ places }) {
@@ -47,7 +53,6 @@ class PlaceList extends Component {
 			<PlaceItem 
 				onCheckIn={this.props.userCheckIn}
 				user={this.props.user}
-				selectPlace={this.props.selectPlace}
 				data={place}
 			/>
 		);
@@ -55,7 +60,7 @@ class PlaceList extends Component {
 
 	render() {
 		return (
-			<View>
+			<View style={{ flex: 1 }}>
 				<ListView
 					enableEmptySections
 					dataSource={this.dataSource}
@@ -78,4 +83,4 @@ const mapStateToProps = ({ places, user }) => {
 };
 
 export default connect(mapStateToProps, {
-	placesFetch, userCheckIn, acceptError, selectPlace, fetchUserData })(PlaceList);
+	placesFetch, userCheckIn, acceptError, cancelHandles })(PlaceList);

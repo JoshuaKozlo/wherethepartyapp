@@ -1,19 +1,24 @@
 import React, { Component } from 'react';
-import { Text, View, Image } from 'react-native';
+import { Text, View, Image, TouchableOpacity } from 'react-native';
 
 class Comment extends Component {
 	renderDelete() {
-		if (this.props.admin) {
+		const { admin, data } = this.props;
+		if (admin) {
 			return (
-				<Text style={styles.deleteStyle}>X</Text>
+				<TouchableOpacity 
+					style={styles.deleteStyle}
+					onPress={() => this.props.commentDelete(data)}
+				>
+					<Text style={{ fontWeight: 'bold', color: '#AAA' }}>X</Text>
+				</TouchableOpacity>
 			);
 		}
 	}
 
 	render() {
-		const { name, message } = this.props.data;
+		const { sender, message } = this.props.data;
 		const { nameStyle, statusStyle, containerStyle, textStyle } = styles;
-
 		return (
 			<View style={containerStyle}>
 				<Image
@@ -21,7 +26,7 @@ class Comment extends Component {
 					source={require('../img/person.png')}
 				/>
 				<View style={textStyle}>
-					<Text style={nameStyle}>{name}</Text>
+					<Text style={nameStyle}>{sender}</Text>
 					<Text style={statusStyle}>{message}</Text>
 				</View>
 				{this.renderDelete()}
@@ -57,8 +62,6 @@ const styles = {
 	},
 	deleteStyle: {
 		position: 'absolute',
-		color: '#C54B51',
-		fontWeight: 'bold',
 		top: 10,
 		right: 10
 	}

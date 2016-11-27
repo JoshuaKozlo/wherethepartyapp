@@ -11,7 +11,7 @@ import {
 
 class PlaceItem extends Component {
 	state = {
-		pan: new Animated.Value(400),
+		pan: new Animated.Value(0),
 		color: new Animated.Value(0)
 	}
 
@@ -19,7 +19,7 @@ class PlaceItem extends Component {
 		const { onCheckIn, data, user } = this.props;
 
 		if (user.place === data.id) {
-			this.state.pan.setValue(0);
+			this.state.pan.setValue(600);
 		}
 
 		this.panResponder = PanResponder.create({
@@ -29,7 +29,7 @@ class PlaceItem extends Component {
 			
 			onPanResponderMove: (evt, gestureState) => {
 				if (data.id !== this.props.user.place) {
-					this.state.pan.setValue(400 - gestureState.dx);
+					this.state.pan.setValue(gestureState.dx);
 				} else if (gestureState.dx > 0) {
 					this.state.color.setValue(gestureState.dx);
 				}
@@ -40,14 +40,16 @@ class PlaceItem extends Component {
 					this.onClick();
 				} else if (data.id !== this.props.user.place) {			
 					if (gestureState.dx > 200) {
-						this.state.pan.setValue(0);
+						this.state.pan.setValue(600);
 						onCheckIn(data.id);
 					} else {
-						this.state.pan.setValue(400);
+						this.state.pan.setValue(0);
 					}
 				} else if (data.id === this.props.user.place) {
 					if (gestureState.dx > 200) {
 						onCheckIn();
+						Animated.timing(this.state.color, 
+							{ toValue: 0, duration: 1000 }).start();
 					} else {
 						this.state.color.setValue(0);
 					}
@@ -59,12 +61,12 @@ class PlaceItem extends Component {
 
 	componentWillReceiveProps(nextProps) {
 		if (nextProps.user.place !== this.props.data.id) {
-			this.state.pan.setValue(400);
+			this.state.pan.setValue(0);
 		}
 	}
 
 	componentWillUpdate() {
-		LayoutAnimation.spring();
+		LayoutAnimation.linear();
 	}
 
 	onClick() {
@@ -96,7 +98,7 @@ class PlaceItem extends Component {
 					<Text style={nameStyle}>{name}</Text>
 					<Text style={statusStyle} numberOfLines={1}>{status}</Text>
 				</View>
-				<Animated.View style={[sliderStyle, { right: this.state.pan, backgroundColor: color }]} />
+				<Animated.View style={[sliderStyle, { width: this.state.pan, backgroundColor: color }]} />
 			</View>
 		);
 	}
@@ -123,9 +125,9 @@ const style = {
 	},
 	sliderStyle: {
 		height: 75,
-		width: 400,
 		position: 'absolute',
-		top: 0
+		top: 0,
+		left: 0
 	},
 	containerStyle: {
 		padding: 5,

@@ -5,8 +5,15 @@ import ReduxThunk from 'redux-thunk';
 import firebase from 'firebase';
 import reducers from './reducers';
 import Router from './Router';
+import Nav from './Nav';
+import { loginUserSuccess } from './actions';
 
 class App extends Component {
+	constructor() {
+		super();
+		this.store = createStore(reducers, {}, applyMiddleware(ReduxThunk));
+	}
+
 	componentWillMount() {
 		firebase.initializeApp({
 			apiKey: 'AIzaSyCYBRMrsJ8PymrJNFqCcFljlmYGLT8zwSE',
@@ -15,16 +22,23 @@ class App extends Component {
 			storageBucket: 'where-the-party-app.appspot.com',
 			messagingSenderId: '638126812285'
 		});
-		// MUST REMOVE THIS LINE BEFORE DEPLOY
-		firebase.auth().signInWithEmailAndPassword('test@test.com', 'password');
+
+		firebase.auth().signInWithEmailAndPassword('admin@test.com', 'password');
+
+		firebase.auth().onAuthStateChanged((user) => {
+			if (user) {
+				console.log('logged in');
+				this.store.dispatch(loginUserSuccess(user));
+			} else {
+				console.log('not logged in');
+			}
+		});
 	}
 
 	render() {
-		const store = createStore(reducers, {}, applyMiddleware(ReduxThunk));
-
 		return (
-			<Provider store={store}>
-				<Router />
+			<Provider store={this.store}>
+				<Nav />
 			</Provider>
 		);
 	}

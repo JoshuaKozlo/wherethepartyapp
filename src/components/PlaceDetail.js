@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Text, View, TouchableWithoutFeedback } from 'react-native';
+import { Text, View } from 'react-native';
 import { connect } from 'react-redux';
 import { Actions } from 'react-native-router-flux';
 import CommentList from './CommentList';
@@ -15,7 +15,6 @@ class PlaceDetail extends Component {
 
 		return (
 			<View style={{ flex: 1 }}>
-				<TouchableWithoutFeedback onPress={() => Actions.refresh({ key: 'placeDetail'})}>
 				<View style={containerStyle}>
 					<View style={[countContainerStyle, { backgroundColor: countBackground }]}>
 						<Text 
@@ -27,9 +26,8 @@ class PlaceDetail extends Component {
 						<Text style={statusStyle}>{status}</Text>
 					</View>
 				</View>
-				</TouchableWithoutFeedback>
 				<CommentList place={id} />
-				<CommentSubmit placeId={id} user={this.props.user} />
+				<CommentSubmit placeId={id} sender={this.props.user} />
 			</View>
 		);
 	}
@@ -42,9 +40,10 @@ const style = {
 		margin: 0
 	},
 	countContainerStyle: {
-		flex: 1,
 		justifyContent: 'center',
 		alignItems: 'center',
+		width: 80,
+		height: 80,
 		padding: 0,
 		margin: 0
 	},

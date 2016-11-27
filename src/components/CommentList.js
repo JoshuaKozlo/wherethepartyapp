@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Text, ListView } from 'react-native';
+import _ from 'lodash';
 import { commentsFetch } from '../actions';
 import Comment from './Comment';
 
@@ -25,8 +26,8 @@ class CommentList extends Component {
 	renderComments() {
 		const { noCommentStyle } = style;
 
-		if (!this.props.comments) {
-			return <Text style={noCommentStyle}>No Comments, Write the first!</Text>
+		if (_.isEmpty(this.props.comments)) {
+			return <Text style={noCommentStyle}>No Comments, Write the first!</Text>;
 		}
 		return (
 			<ListView
@@ -38,7 +39,13 @@ class CommentList extends Component {
 	}
 
 	renderRow(comment) {
-		return <Comment data={comment} />;
+		return (
+			<Comment
+				commentDelete={this.props.commentDelete}
+				admin={this.props.admin} 
+				data={comment} 
+			/>
+		);
 	}
 
 	render() {
@@ -57,10 +64,14 @@ const style = {
 };
 
 const mapStateToProps = ({ commentList }) => {
-	if (commentList) {
-		return { comments: commentList };
-	}
-	return { comments: false };
+	const comments = _.map(commentList, (val, id) => {
+		return { ...val, id };
+	});
+	return { comments };
+	// if (commentList) {
+	// 	return { comments: commentList };
+	// }
+	// return { comments: {} };
 };
 
 export default connect(mapStateToProps, { commentsFetch })(CommentList);

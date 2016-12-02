@@ -2,14 +2,15 @@ import React, { Component } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { connect } from 'react-redux';
 import { signUpUser } from '../actions';
+import { Spinner } from './common';
 
 class SignUpForm extends Component {
 	state = {
-		first: '',
-		last: '',
-		email: '',
-		password: '',
-		passwordConfirm: '',
+		first: 'Jose',
+		last: 'Test',
+		email: 'test1@test.com',
+		password: 'password',
+		passwordConfirm: 'password',
 		error: ''
 	}
 
@@ -17,8 +18,19 @@ class SignUpForm extends Component {
 		this.props.signUpUser(this.state);
 	}
 
+	renderButton() {
+		if (this.props.loading) {
+			return <Spinner size="small" />;
+		}
+		return (
+			<TouchableOpacity style={styles.buttonStyle} onPress={this.onButtonPress.bind(this)}>
+				<Text>Sign Up</Text>
+			</TouchableOpacity>
+		);
+	}
+
 	render() {
-		const { containerStyles, inputStyles, buttonStyle, innerContainer } = styles;
+		const { containerStyles, inputStyles, innerContainer } = styles;
 
 		return (
 			<View style={containerStyles}>
@@ -66,9 +78,7 @@ class SignUpForm extends Component {
 						secureTextEntry
 					/>
 					<Text style={{ color: 'red', padding: 10 }}>{this.props.error}</Text>
-					<TouchableOpacity style={buttonStyle} onPress={this.onButtonPress.bind(this)}>
-						<Text>Sign Up</Text>
-					</TouchableOpacity>
+					{this.renderButton()}
 				</View>
 			</View>
 		);
@@ -79,7 +89,8 @@ const styles = {
 	containerStyles: {
 		flex: 1,
 		flexDirection: 'column',
-		justifyContent: 'flex-start'
+		justifyContent: 'flex-start',
+		marginTop: 65
 	},
 	inputStyles: {
 		height: 50,
@@ -106,8 +117,8 @@ const styles = {
 };
 
 const mapStateToProps = ({ auth }) => {
-	const { error } = auth;
-	return { error };
+	const { error, loading } = auth;
+	return { error, loading };
 };
 
 export default connect(mapStateToProps, { signUpUser })(SignUpForm);

@@ -6,7 +6,7 @@ import firebase from 'firebase';
 import reducers from './reducers';
 import Router from './Router';
 import Nav from './Nav';
-import { loginUserSuccess } from './actions';
+import { loginUserSuccess, cancelUserHandle } from './actions';
 
 class App extends Component {
 	constructor() {
@@ -23,16 +23,17 @@ class App extends Component {
 			messagingSenderId: '638126812285'
 		});
 
-		firebase.auth().signInWithEmailAndPassword('admin@test.com', 'password');
-
 		firebase.auth().onAuthStateChanged((user) => {
 			if (user) {
 				console.log('logged in');
 				this.store.dispatch(loginUserSuccess(user));
 			} else {
+				this.store.dispatch(cancelUserHandle());
 				console.log('not logged in');
 			}
 		});
+
+		// firebase.auth().signInWithEmailAndPassword('admin@test.com', 'password');
 	}
 
 	render() {

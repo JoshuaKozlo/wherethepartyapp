@@ -2,15 +2,12 @@ import React, { Component } from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { connect } from 'react-redux';
 import { signInUser } from '../actions';
+import { Spinner } from './common';
 
 class SignInForm extends Component {
 	state = {
 		email: 'admin@test.com',
 		password: 'password'
-	}
-
-	componentWillUnmount() {
-		console.log('sign in unmount');
 	}
 
 	onButtonPress() {
@@ -19,8 +16,19 @@ class SignInForm extends Component {
 		this.props.signInUser({ email, password });
 	}
 
+	renderButton() {
+		if (this.props.loading) {
+			return <Spinner size="small" />;
+		}
+		return (
+			<TouchableOpacity style={styles.buttonStyle} onPress={this.onButtonPress.bind(this)}>
+				<Text>Sign In</Text>
+			</TouchableOpacity>
+		);
+	}
+
 	render() {
-		const { containerStyles, inputStyles, buttonStyle, innerContainer } = styles;
+		const { containerStyles, inputStyles, innerContainer } = styles;
 
 		return (
 			<View style={containerStyles}>
@@ -41,9 +49,7 @@ class SignInForm extends Component {
 						secureTextEntry
 					/>
 					<Text style={{ color: 'red', padding: 10 }}>{this.props.error}</Text>
-					<TouchableOpacity style={buttonStyle} onPress={this.onButtonPress.bind(this)}>
-						<Text>Sign In</Text>
-					</TouchableOpacity>
+					{this.renderButton()}
 				</View>
 			</View>
 		);
@@ -54,7 +60,8 @@ const styles = {
 	containerStyles: {
 		flex: 1,
 		flexDirection: 'column',
-		justifyContent: 'flex-start'
+		justifyContent: 'flex-start',
+		marginTop: 65
 	},
 	inputStyles: {
 		height: 50,
@@ -81,8 +88,8 @@ const styles = {
 };
 
 const mapStateToProps = ({ auth }) => {
-	const { error } = auth;
-	return { error };
+	const { error, loading } = auth;
+	return { error, loading };
 };
 
 export default connect(mapStateToProps, { signInUser })(SignInForm);

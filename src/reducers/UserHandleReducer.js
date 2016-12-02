@@ -1,16 +1,16 @@
 import {
-	MANAGED_FETCH_SUCCESS,
-	SIGN_OUT
+	USER_HANDLE_ADDED,
+	CANCEL_USER_HANDLE
 } from '../actions/types';
 
-const INITIAL_STATE = {};
+const INITIAL_STATE = false;
 
 export default (state = INITIAL_STATE, action) => {
 	switch (action.type) {
-		case MANAGED_FETCH_SUCCESS:
-			console.log(action.payload);
+		case USER_HANDLE_ADDED:
 			return action.payload;
-		case SIGN_OUT:
+		case CANCEL_USER_HANDLE:
+			state.off();
 			return INITIAL_STATE;
 		default:
 			return state;

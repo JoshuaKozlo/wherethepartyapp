@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import { Text, View, TouchableOpacity, TextInput } from 'react-native';
 import { connect } from 'react-redux';
-import { Actions } from 'react-native-router-flux';
-import { updateStatus, commentDelete } from '../actions';
+import { updateStatus, commentDelete, fetchAdminData, cancelPlaceHandles } from '../actions';
 import CommentList from './CommentList';
 import CommentSubmit from './CommentSubmit';
 import ConfirmCommentDelete from './ConfirmCommentDelete';
@@ -14,8 +13,26 @@ class PlaceManager extends Component {
 		toDelete: {}
 	}
 
-	componentWillMount() {
-		this.setState({ statusText: this.props.place.status });
+	componentDidMount() {
+		this.props.fetchAdminData(this.props.placeId);
+		this.setState({ statusText: this.props.status });
+	}
+
+	componentWillReceiveProps(nextProps) {
+		if (nextProps.place.status !== this.props.place.status) {
+			if (nextProps.place.status !== this.state.statusText) {
+				this.setState({ statusText: nextProps.place.status });
+			}
+		}
+	}
+
+	componentWillUnmount() {
+		this.props.cancelPlaceHandles();
+	}
+
+	onCommentDelete() {
+		this.props.commentDelete(this.props.placeId, this.state.toDelete.id);
+		this.setState({ showModal: false, toDelete: {} });
 	}
 
 	renderUpdateStatus() {
@@ -23,7 +40,7 @@ class PlaceManager extends Component {
 			return (
 				<TouchableOpacity 
 					style={style.postStatusStyle} 
-					onPress={() => this.props.updateStatus(this.props.place.id, this.state.statusText)}
+					onPress={() => this.props.updateStatus(this.props.placeId, this.state.statusText)}
 				>
 					<Text>Update Status</Text>
 				</TouchableOpacity>
@@ -31,23 +48,19 @@ class PlaceManager extends Component {
 		}
 	}
 
-	onCommentDelete() {
-		this.props.commentDelete(this.props.place.id, this.state.toDelete.id);
-		this.setState({ showModal: false, toDelete: {} });
-	}
-
 	render() {
-		const { count, name, id } = this.props.place;
+		const { count, name } = this.props.place;
+		const { placeId } = this.props;
 		const {
 			countStyle, countContainerStyle, nameStyle, 
 			statusStyle, textStyle, containerStyle
 		} = style;
-		const countBackground = id === this.props.user.place ? 'rgba(140,194,75,.25)' : '#FFF';
-		const countColor = id === this.props.user.place ? 'rgb(194, 209, 176)' : '#DDD';
+		const countBackground = placeId === this.props.user.place ? 'rgba(140,194,75,.25)' : '#FFF';
+		const countColor = placeId === this.props.user.place ? 'rgb(194, 209, 176)' : '#DDD';
 		const countFontSize = count < 100 ? 50 : 40;
 
 		return (
-			<View style={{ flex: 1 }}>
+			<View style={{ flex: 1, marginTop: 65 }}>
 				<View style={containerStyle}>
 					<View style={[countContainerStyle, { backgroundColor: countBackground }]}>
 						<Text 
@@ -66,8 +79,12 @@ class PlaceManager extends Component {
 						{this.renderUpdateStatus()}
 					</View>
 				</View>
-				<CommentList admin commentDelete={comment => this.setState({ toDelete: comment, showModal: true })} place={id} />
-				<CommentSubmit admin={this.props.place.name} placeId={id} />
+				<CommentList
+					admin 
+					commentDelete={comment => this.setState({ toDelete: comment, showModal: true })} 
+					place={placeId} 
+				/>
+				<CommentSubmit admin={this.props.place.name} placeId={placeId} />
 				<ConfirmCommentDelete
 					visible={this.state.showModal}
 					onYes={this.onCommentDelete.bind(this)}
@@ -135,9 +152,9 @@ const style = {
 	}
 };
 
-const mapStateTopProps = ({ places, user }, ownProps) => {
-	const place = places[ownProps.placeId];
+const mapStateTopProps = ({ managed, user }) => {
+	const place = managed;
 	return { place, user };
 };
 
-export default connect(mapStateTopProps, { updateStatus, commentDelete })(PlaceManager);
+export default connect(mapStateTopProps, { updateStatus, commentDelete, fetchAdminData, cancelPlaceHandles })(PlaceManager);

@@ -41,13 +41,13 @@ class PlaceItem extends Component {
 				} else if (data.id !== this.props.user.place) {			
 					if (gestureState.dx > 200) {
 						this.state.pan.setValue(600);
-						onCheckIn(data.id);
+						onCheckIn(data.id, this.props.user.place);
 					} else {
 						this.state.pan.setValue(0);
 					}
 				} else if (data.id === this.props.user.place) {
 					if (gestureState.dx > 200) {
-						onCheckIn();
+						onCheckIn(data.id, this.props.user.place);
 						Animated.timing(this.state.color, 
 							{ toValue: 0, duration: 1000 }).start();
 					} else {
@@ -71,7 +71,8 @@ class PlaceItem extends Component {
 
 	onClick() {
 		InteractionManager.runAfterInteractions(() => {
-			Actions.placeDetail({ placeId: this.props.data.id });
+			this.props.navigator.push({ name: 'PlaceDetail', passProps: { placeId: this.props.data.id } });
+			// Actions.placeDetail({ placeId: this.props.data.id });
 		});
 	}
 

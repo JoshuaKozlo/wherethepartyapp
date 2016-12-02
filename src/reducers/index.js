@@ -4,7 +4,9 @@ import PlacesReducer from './PlacesReducer';
 import CommentListReducer from './CommentListReducer';
 import ManagedReducer from './ManagedReducer';
 import AuthReducer from './AuthReducer';
-import HandlesReducer from './HandlesReducer';
+import PlacesHandleReducer from './PlacesHandleReducer';
+import CommentsHandleReducer from './CommentsHandleReducer';
+import UserHandleReducer from './UserHandleReducer';
 
 export default combineReducers({
 	auth: AuthReducer,
@@ -12,5 +14,7 @@ export default combineReducers({
 	places: PlacesReducer,
 	commentList: CommentListReducer,
 	managed: ManagedReducer,
-	handles: HandlesReducer
+	placesHandles: PlacesHandleReducer,
+	commentHandle: CommentsHandleReducer,
+	userHandle: UserHandleReducer
 });

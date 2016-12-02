@@ -1,6 +1,4 @@
 import firebase from 'firebase';
-import { Actions } from 'react-native-router-flux';
-import _ from 'lodash';
 import {
 	AUTH_ERROR,
 	FETCH_USER_DATA,
@@ -8,28 +6,13 @@ import {
 	LOGIN_USER_SUCCESS,
 	MANAGED_FETCH_SUCCESS,
 	SIGN_OUT,
-	CANCEL_HANDLES
+	PLACE_HANDLE_ADDED,
+	USER_HANDLE_ADDED,
+	CANCEL_USER_HANDLE
 } from './types';
-
-export const startAuthListener = () => {
-	return (dispatch) => {
-		firebase.auth().onAuthStateChanged(user => {
-			if (user) {
-				console.log('login')
-				dispatch(fetchUserData(user.uid));
-				loginUserSuccess(dispatch, user);
-			} else {
-				dispatch({ type: SIGN_OUT });
-				console.log('out')
-				Actions.auth();
-			}
-		});
-	};
-};
 
 export const loginUserSuccess = (user) => {
 		return (dispatch) => {
-			Actions.main();
 			dispatch(fetchUserData(user.uid));
 			dispatch({
 				type: LOGIN_USER_SUCCESS,
@@ -56,7 +39,6 @@ export const signOutUser = () => {
 	return (dispatch) => {
 		dispatch({ type: SIGN_OUT });
 		firebase.auth().signOut();
-		Actions.auth();
 	};
 };
 
@@ -67,12 +49,8 @@ export const signUpUser = ({ email, password, passwordConfirm, first, last }) =>
 		if (password === passwordConfirm) {
 			if (first.length > 0 && last.length > 0) {
 				firebase.auth().createUserWithEmailAndPassword(email, password)
-					.then(user => {
-						loginUserSuccess(dispatch, user);
-						user.updateProfile({
-							displayName: `${first} ${last}`
-						});
-						Actions.main();
+					.then(() => {
+						dispatch(createUserData(first, last));
 					}).catch(error => {
 						dispatch({
 							type: AUTH_ERROR,
@@ -94,44 +72,44 @@ export const signUpUser = ({ email, password, passwordConfirm, first, last }) =>
 	};
 };
 
-// export const createUserData = (first, last) => {
-// 	const user = firebase.auth().currentUser;
-// 	return (dispatch) => {
-// 		firebase.database().ref(`/users/${user.uid}`).set({ admin: false })
-// 			.then(() => {
-// 				dispatch(fetchUserData());
-// 			});
-// 		user.updateProfile({
-// 			displayName: `${first} ${last}`
-// 		});
-// 	};
-// };
+export const createUserData = (first, last) => {
+	const user = firebase.auth().currentUser;
+	return () => {
+		firebase.database().ref(`/users/${user.uid}`).set({ admin: false });
+		user.updateProfile({
+			displayName: `${first} ${last}`
+		});
+	};
+};
 
 export const fetchUserData = (uid) => {
 	const userRef = firebase.database().ref(`/users/${uid}`);
 
 	return (dispatch) => {
 		userRef.on('value', (snapshot) => {
-			if (snapshot.hasChild('admin')) {
-				dispatch(fetchAdminData(snapshot.val().admin));
-			}
 			dispatch({
 				type: FETCH_USER_DATA,
 				payload: snapshot.val()
 			});
 		});
+		dispatch({ type: USER_HANDLE_ADDED, payload: userRef });
 	};
 };
 
-const fetchAdminData = (places) => {
+export const cancelUserHandle = () => {
+	return {
+		type: CANCEL_USER_HANDLE
+	};
+};
+
+export const fetchAdminData = (placeId) => {
 	return (dispatch) => {
-		_.forOwn(places, (value, key) => {
-			const placeRef = firebase.database().ref(`/places/${key}`).child('meta');
-			placeRef.on('value', (snapshot) => {
-				dispatch({
-					type: MANAGED_FETCH_SUCCESS,
-					payload: { [key]: snapshot.val() }
-				});
+		const placeRef = firebase.database().ref(`/places/${placeId}`).child('meta');
+		dispatch({ type: PLACE_HANDLE_ADDED, payload: placeRef });
+		placeRef.on('value', (snapshot) => {
+			dispatch({
+				type: MANAGED_FETCH_SUCCESS,
+				payload: snapshot.val()
 			});
 		});
 	};

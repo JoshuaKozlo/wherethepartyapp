@@ -2,17 +2,24 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Text, ListView } from 'react-native';
 import _ from 'lodash';
-import { commentsFetch } from '../actions';
+import { commentsFetch, cancelCommentsHandle } from '../actions';
 import Comment from './Comment';
 
 class CommentList extends Component {
 	componentWillMount() {
-		this.props.commentsFetch(this.props.place);
 		this.createDataSource(this.props);
+	}
+
+	componentDidMount() {
+		this.props.commentsFetch(this.props.place);
 	}
 
 	componentWillReceiveProps(nextProps) {
 		this.createDataSource(nextProps);
+	}
+
+	componentWillUnmount() {
+		this.props.cancelCommentsHandle();
 	}
 
 	createDataSource({ comments }) {
@@ -74,4 +81,4 @@ const mapStateToProps = ({ commentList }) => {
 	// return { comments: {} };
 };
 
-export default connect(mapStateToProps, { commentsFetch })(CommentList);
+export default connect(mapStateToProps, { commentsFetch, cancelCommentsHandle })(CommentList);

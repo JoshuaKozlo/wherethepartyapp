@@ -1,8 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { ListView, View } from 'react-native';
-import { Actions } from 'react-native-router-flux';
-import { placesFetch, cancelHandles, userCheckIn, acceptError } from '../actions';
+import { placesFetch, cancelPlaceHandles, userCheckIn, acceptError } from '../actions';
 import PlaceItem from './PlaceItem';
 import ErrorModal from './ErrorModal';
 
@@ -31,8 +30,7 @@ class PlaceList extends Component {
 	}
 
 	componentWillUnmount() {
-		console.log('unmount');
-		this.props.cancelHandles();
+		this.props.cancelPlaceHandles();
 	}
 
 	createDataSource({ places }) {
@@ -50,7 +48,8 @@ class PlaceList extends Component {
 
 	renderRow(place) {
 		return (
-			<PlaceItem 
+			<PlaceItem
+				navigator={this.props.navigator} 
 				onCheckIn={this.props.userCheckIn}
 				user={this.props.user}
 				data={place}
@@ -60,7 +59,7 @@ class PlaceList extends Component {
 
 	render() {
 		return (
-			<View style={{ flex: 1 }}>
+			<View style={{ flex: 1, marginTop: 65 }}>
 				<ListView
 					enableEmptySections
 					dataSource={this.dataSource}
@@ -83,4 +82,4 @@ const mapStateToProps = ({ places, user }) => {
 };
 
 export default connect(mapStateToProps, {
-	placesFetch, userCheckIn, acceptError, cancelHandles })(PlaceList);
+	placesFetch, userCheckIn, acceptError, cancelPlaceHandles })(PlaceList);

@@ -1,20 +1,28 @@
 import React, { Component } from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { Actions } from 'react-native-router-flux';
+import { connect } from 'react-redux';
 
 class AuthPage extends Component {
+	componentWillReceiveProps(nextProps) {
+		if (nextProps.user) {
+			this.props.navigator.push({ name: 'Navigation' });
+		}
+	}
+
 	render() {
 		const { containerStyles, innerContainerStyles,
 			buttonStyles, buttonTextStyles
 		} = styles;
 
+		const { navigator } = this.props;
+
 		return (
 			<View style={containerStyles}>
 				<View style={innerContainerStyles}>
-					<TouchableOpacity style={buttonStyles} onPress={() => Actions.signIn()}>
+					<TouchableOpacity style={buttonStyles} onPress={() => navigator.push({ name: 'SignIn' })}>
 						<Text style={buttonTextStyles}>Sign In</Text>
 					</TouchableOpacity>
-					<TouchableOpacity style={buttonStyles} onPress={() => Actions.signUp()}>
+					<TouchableOpacity style={buttonStyles} onPress={() => navigator.push({ name: 'SignUp' })}>
 						<Text style={buttonTextStyles}>Sign Up</Text>
 					</TouchableOpacity>
 					<TouchableOpacity style={buttonStyles}>
@@ -49,4 +57,9 @@ const styles = {
 	}
 };
 
-export default AuthPage;
+const mapStateToProp = ({ auth }) => {
+	const { user } = auth;
+	return { user };
+};
+
+export default connect(mapStateToProp)(AuthPage);

@@ -6,6 +6,10 @@ import CommentList from './CommentList';
 import CommentSubmit from './CommentSubmit';
 
 class PlaceDetail extends Component {
+	componentWillUnmount() {
+		console.log('place detail unmount')
+	}
+
 	render() {
 		const { count, name, status, id } = this.props.place;
 		const { countStyle, countContainerStyle, nameStyle, statusStyle, textStyle, containerStyle } = style;
@@ -14,7 +18,7 @@ class PlaceDetail extends Component {
 		const countFontSize = count < 100 ? 50 : 40;
 
 		return (
-			<View style={{ flex: 1 }}>
+			<View style={{ flex: 1, marginTop: 65 }}>
 				<View style={containerStyle}>
 					<View style={[countContainerStyle, { backgroundColor: countBackground }]}>
 						<Text 
@@ -76,7 +80,7 @@ const style = {
 
 const mapStateTopProps = ({ places, user }, ownProps) => {
 	const place = places[ownProps.placeId];
-	return { place, user };
+	return { user, place };
 };
 
 export default connect(mapStateTopProps)(PlaceDetail);
